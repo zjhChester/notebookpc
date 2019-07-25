@@ -1,0 +1,262 @@
+﻿{template 'header'}
+<!-- 开屏广告start -->
+{if $reply['islinkpage']=='2'&&$isopenlink=='first'}
+<style>
+.linkpageFull{position:absolute; width:100%;height:100%; z-index:111;opacity: 0.7;background:#DFE8F7;} 
+.linkpageDiv{position:absolute; width:100%; z-index:112;opacity: 1;top:70px;}
+#times{ position:absolute; right:20px; top:40px; background:#FEFEF2;border-radius: 15px;font-weight:bold;} 
+</style>
+<div class="linkpageFull" id="linkpageFull">
+	<div id="times"></div>
+</div>
+<div id="linkpageDiv" class="carousel slide linkpageDiv" data-wrap="false" data-interval="{php echo $reply['linkpagetime']*1000/count($linkdata)}" style="border-width:0">
+		<ol class="carousel-indicators">
+			{php $slideNum = 0;}
+			{loop $linkdata $row}
+			<li data-target="#linkpageDiv" data-slide-to="{$slideNum}"{if $slideNum == '0'} class="active"{/if}></li>
+			{php $slideNum++;}
+			{/loop}
+		</ol>
+
+		<div class="carousel-inner" role="listbox"> 
+			{loop $linkdata $row}
+			<div class="item{if $linkdata[0] == $row} active{/if}">
+				<a href="{if $row['linkpageurl']!=''} {$row['linkpageurl']} {else}javascript:;{/if}">
+					<center> <img class="imgClass" src="{media $row['linkpageimg']}"></center> 
+				</a>
+			</div>
+			{/loop}
+		</div>
+	</div>
+{/if}
+<!-- 开屏广告end -->
+{if $reply['isindexslide']==1}
+{template 'sider'}
+{/if}
+<style type="text/css">
+	.slide{    border-bottom: 1px solid #000;}
+</style>
+{if $reply['topimg']!=""}
+<div class="divmain1"><img src="{php echo tomedia($reply['topimg']);}" alt="shareImg"></div>
+{/if}
+<div class="num_box assa">
+	<ul class="num_box_ul">
+		<li><span class="text"><i class="glyphicon glyphicon-paperclip"></i> 已报名</span> <span>{$jointotal}</span></li>
+		<li><span class="text"> <i class="glyphicon glyphicon-thumbs-up"></i> 累计投票</span> <span>{$votetotal}</span></li>
+		<li><span class="text"><i class="glyphicon glyphicon-eye-open"></i> 访问量</span> <span>{$pvtotal}</span></li>
+
+    </ul>
+	
+<div class="time-item">
+    <div class="day">活动结束倒计时</div>
+	<strong id="day_show">0天</strong>
+	<strong id="hour_show">0时</strong>
+	<strong id="minute_show">0分</strong>
+	<strong id="second_show">0秒</strong>
+</div>
+	
+<div class='join-item'>
+{if $voteuser['id']!=""}
+<div class='join_us'><a href='{php echo $this->createMobileUrl('view', array('rid' => $reply['rid'],'id'=>$voteuser['id']))}'>我的投票</a></div>
+{else}
+	{if $aptime!=2}
+	<div class='join_us'><a href='{php echo $this->createMobileUrl('join', array('rid' => $reply['rid']))}'>我要报名</a></div>
+	{/if}
+{/if}
+
+</div>
+
+</div>
+<div class="search">
+<div class="joinsearch clearfix">
+  <input type="text" value="" name="sci" placeholder="请输入编号或姓名" class="inputtxt">
+  <div class="divsub" onclick="get_list(1);">搜&nbsp;索</div>
+</div>
+</div>
+{if $reply['infoorder']==1}
+<div class="divmain10 ">
+  <div class="divconcon">
+  {if $reply['eventrule']==""}
+     请至后台编辑活动，设置活动规则内容，支持HTML！
+  {else}
+	 {$reply['eventrule']}
+  {/if}
+  </div>
+</div>
+{/if}
+<section class="content" id="toupiao">
+<div id="pageCon">
+<ul class="list_box clearfix" id="list_box" style="position: relative;"></ul>
+<div id="list_more" class="box"><span class="am-text-secondary" onclick="get_list(0);">查看更多</span></div>
+{php echo m('tpl')->AdPiece('tyzm_diamondvote_index',$reply['index_ad']);}
+</div>
+</section>
+<div style="clear:both;"></div>
+
+{if $reply['infoorder']==0}
+<div class="divmain10 eventrule">
+  <div class="tabtitle macol">
+       <i class="fa fa-file-text-o"></i> 活动规则
+   </div>
+  <div class="divconcon">
+  {if $reply['eventrule']==""}
+     请至后台编辑活动，设置活动规则内容，支持HTML！
+  {else}
+	 {$reply['eventrule']}
+  {/if}
+  </div>
+</div>
+{/if}
+<div class="copyright"></div>
+
+{template 'nav_footer'}
+
+<script type="text/javascript">
+var limit = 1;
+function get_list(ty){
+    
+    if(ty==1){
+	   var keyword=$("input[name='sci']").val();
+	   if(keyword==""){
+	      dialog2("请输入编号或姓名");
+		  return false;
+	   }
+	   $("#pageCon .list_box").html('');
+	}else{
+	   $("#list_more").html('<div class="am-text-secondary"><span class="am-icon-spinner am-icon-spin">卖命加载中...</span> </div>');
+	   var keyword="";
+	}
+	$('.imgClass').height(window.innerHeight*8/10).width(window.innerWidth*8/10);
+	$.ajax({
+	    type : "post",
+	    url : "{php echo $this->createMobileUrl('Index',array('rid'=>$rid))}",
+	    data : {
+	    	limit:limit,
+			keyword:keyword
+	    },
+        dataType : "json",		
+	    success : function(data) {
+	    	if(data.status==200){
+						var list = data.content;
+						var content = '';
+						for(var i=0; i<list.length; i++){
+							content += '<li class="picCon"><div>'
+							+'<i class="number">'+list[i]['noid']+'号，'+list[i]['votenum']+'票</i>'
+							+'<a href="'+list[i]['url']+'" class="img"><img src="'+list[i]['img1']+'"></a>'
+							+'<div class="clearfix"><p>'+list[i]['name']+'</p>'
+							+'<a href="'+list[i]['url']+'" class="vote">投票</a></div>'
+							+'</div></li>';
+							
+						}
+                        $("#pageCon .list_box").append(content);
+						if(list.length=={$psize}){
+							$("#list_more").html('<span class="am-text-secondary" onclick="get_list(0);">查看更多</span>');
+						}else{
+							$("#list_more").html('');
+						}		
+	                    limit++;
+
+						
+
+waterfall();
+		    }else if(data.status==-103){
+	    		$("#list_more").html('<span>没有更多记录！</span>');
+	    	}else if(data.status==301){
+	    		$("#list_more").html('<span>没有搜索到内容！</span>');
+	    	}else{
+			    $("#list_more").html('<span>没有更多记录！</span>');
+			}    	
+	    },
+	    error : function(xhr, type) {
+
+	    }
+	});
+	    
+
+}
+get_list(0);
+
+function waterfall(limit){
+$container = $('#list_box');
+$container.masonry('reload');
+	$container.imagesLoaded(function() {
+		$container.masonry({
+			itemSelector: '.picCon',
+			gutter: 20,
+			isAnimated: true,
+			});
+		});
+}
+
+{if  $reply['indexsound']}
+			$("body").append('<div class="video_exist play_yinfu" id="audio_btn" style="display: block;"><div id="yinfu" class="rotate"></div><audio preload="auto" autoplay="autoplay" id="media" src="{media $reply['indexsound']}" loop></audio></div>');
+			$("#media")[0].play();
+			document.addEventListener("WeixinJSBridgeReady", function () {$("#media")[0].play();}, false);
+			$("#audio_btn").click(function() {
+				$(this).hasClass("off") ? ($(this).addClass("play_yinfu").removeClass("off"), $("#yinfu").addClass("rotate"), $("#media")[0].play()) : ($(this).addClass("off").removeClass("play_yinfu"), $("#yinfu").removeClass("rotate"), $("#media")[0].pause())
+			})
+{/if}
+    
+</script>
+<script type="text/javascript">
+var intDiff = parseInt({php echo $reply['endtime']-time();});//倒计时总秒数量
+function timer(intDiff){
+	window.setInterval(function(){
+	var day=0,
+		hour=0,
+		minute=0,
+		second=0;//时间默认值		
+	if(intDiff > 0){
+		day = Math.floor(intDiff / (60 * 60 * 24));
+		hour = Math.floor(intDiff / (60 * 60)) - (day * 24);
+		minute = Math.floor(intDiff / 60) - (day * 24 * 60) - (hour * 60);
+		second = Math.floor(intDiff) - (day * 24 * 60 * 60) - (hour * 60 * 60) - (minute * 60);
+	}
+	if (minute <= 9) minute = '0' + minute;
+	if (second <= 9) second = '0' + second;
+	$('#day_show').html(day+"天");
+	$('#hour_show').html('<s id="h"></s>'+hour+'时');
+	$('#minute_show').html('<s></s>'+minute+'分');
+	$('#second_show').html('<s></s>'+second+'秒');
+	intDiff--;
+	}, 1000);
+} 
+
+$(function(){
+	timer(intDiff);
+	//开屏广告start
+	{if $reply['islinkpage']=='2'&&$isopenlink=='first'}
+		require(['bootstrap', 'hammer'], function($, Hammer){
+		$('#linkpageDiv').carousel();
+			var mc = new Hammer($('#linkpageDiv').get(0));
+			mc.on("panleft", function(ev) {
+				$('#linkpageDiv').carousel('next');
+			});
+			mc.on("panright", function(ev) {
+				$('#linkpageDiv').carousel('prev');
+			});
+		});
+		$('#linkpageFull,#linkpageDiv').on("touchmove",function(e){
+			e.preventDefault();
+			e.stopPropagation();
+		})
+		var countdown="{$reply['linkpagetime']}";
+		function settime() {
+			if (countdown == 0) {
+				$('#linkpageFull,#linkpageDiv').hide();
+				return;
+			} else {
+				$('#times').html("广告("+(countdown<10?"0":"")+countdown+")");
+				countdown--;
+			}
+			setTimeout(function() {
+						settime() }
+					,1000)
+		}
+		settime();
+	{/if}
+	//开屏广告start
+});	
+</script>
+<script src="//cdn.bootcss.com/masonry/2.1.08/jquery.masonry.min.js"></script>
+{template 'footer'}
